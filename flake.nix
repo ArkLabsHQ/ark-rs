@@ -39,6 +39,7 @@
             # TODO: Trim these.
             buildInputs = [
               binaryen
+              dprint
               gcc
               go
               jq
@@ -47,15 +48,16 @@
               pkg-config
               postgresql
               rustAnalyzer
-              rustToolchainWithWasm
+              # Must appear _before_ `rustToolchainWithWasm`.
               rustfmt
+              rustToolchainWithWasm
               wabt
               wasm-bindgen-cli
               wasm-pack
               worker-build
             ];
 
-            RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
+            RUST_SRC_PATH = "${rustToolchainWithWasm}/lib/rustlib/src/rust/library";
           };
         }
     );
