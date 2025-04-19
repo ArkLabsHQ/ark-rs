@@ -63,7 +63,7 @@ int rustsecp256k1zkp_v0_8_0_musig_adapt(const rustsecp256k1zkp_v0_8_0_context* c
 
     rustsecp256k1zkp_v0_8_0_scalar_add(&s, &s, &t);
     rustsecp256k1zkp_v0_8_0_scalar_get_b32(&sig64[32], &s);
-    memmove(sig64, pre_sig64, 32);
+    my_memmove(sig64, pre_sig64, 32);
     rustsecp256k1zkp_v0_8_0_scalar_clear(&t);
     return ret;
 }

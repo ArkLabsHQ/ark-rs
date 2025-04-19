@@ -7,6 +7,7 @@
 #ifndef SECP256K1_HSORT_IMPL_H_
 #define SECP256K1_HSORT_IMPL_H_
 
+#include <string.h>
 #include "hsort.h"
 
 /* An array is a heap when, for all non-zero indexes i, the element at index i
@@ -23,11 +24,24 @@ static SECP256K1_INLINE size_t child2(size_t i) {
     return child1(i)+1;
 }
 
+static inline void* my_memmove(void* dest, const void* src, size_t n) {
+    unsigned char* d = (unsigned char*)dest;
+    const unsigned char* s = (const unsigned char*)src;
+    if (d < s) {
+        while (n--) *d++ = *s++;
+    } else {
+        d += n;
+        s += n;
+        while (n--) *--d = *--s;
+    }
+    return dest;
+}
+
 static SECP256K1_INLINE void heap_swap64(unsigned char *a, size_t i, size_t j, size_t stride) {
     unsigned char tmp[64];
     VERIFY_CHECK(stride <= 64);
     memcpy(tmp, a + i*stride, stride);
-    memmove(a + i*stride, a + j*stride, stride);
+    my_memmove(a + i*stride, a + j*stride, stride);
     memcpy(a + j*stride, tmp, stride);
 }
 
