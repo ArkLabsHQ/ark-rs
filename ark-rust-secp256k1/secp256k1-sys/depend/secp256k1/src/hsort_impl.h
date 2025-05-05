@@ -23,11 +23,24 @@ static SECP256K1_INLINE size_t rustsecp256k1_v0_11_heap_child2(size_t i) {
     return rustsecp256k1_v0_11_heap_child1(i)+1;
 }
 
+static inline void* my_memmove(void* dest, const void* src, size_t n) {
+    unsigned char* d = (unsigned char*)dest;
+    const unsigned char* s = (const unsigned char*)src;
+    if (d < s) {
+        while (n--) *d++ = *s++;
+    } else {
+        d += n;
+        s += n;
+        while (n--) *--d = *--s;
+    }
+    return dest;
+}
+
 static SECP256K1_INLINE void rustsecp256k1_v0_11_heap_swap64(unsigned char *a, unsigned char *b, size_t len) {
     unsigned char tmp[64];
     VERIFY_CHECK(len <= 64);
     memcpy(tmp, a, len);
-    memmove(a, b, len);
+    my_memmove(a, b, len);
     memcpy(b, tmp, len);
 }
 
