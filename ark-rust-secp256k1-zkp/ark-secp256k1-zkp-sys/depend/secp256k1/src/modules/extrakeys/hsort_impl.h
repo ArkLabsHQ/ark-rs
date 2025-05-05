@@ -27,7 +27,7 @@ static SECP256K1_INLINE void heap_swap64(unsigned char *a, size_t i, size_t j, s
     unsigned char tmp[64];
     VERIFY_CHECK(stride <= 64);
     memcpy(tmp, a + i*stride, stride);
-    memmove(a + i*stride, a + j*stride, stride);
+    my_memmove(a + i*stride, a + j*stride, stride);
     memcpy(a + j*stride, tmp, stride);
 }
 

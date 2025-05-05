@@ -6560,13 +6560,13 @@ static void damage_array(unsigned char *sig, size_t *len) {
     if (action < 1 && *len > 3) {
         /* Delete a byte. */
         pos = rustsecp256k1zkp_v0_8_0_testrand_int(*len);
-        memmove(sig + pos, sig + pos + 1, *len - pos - 1);
+        my_memmove(sig + pos, sig + pos + 1, *len - pos - 1);
         (*len)--;
         return;
     } else if (action < 2 && *len < 2048) {
         /* Insert a byte. */
         pos = rustsecp256k1zkp_v0_8_0_testrand_int(1 + *len);
-        memmove(sig + pos + 1, sig + pos, *len - pos);
+        my_memmove(sig + pos + 1, sig + pos, *len - pos);
         sig[pos] = rustsecp256k1zkp_v0_8_0_testrand_bits(8);
         (*len)++;
         return;

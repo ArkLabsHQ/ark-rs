@@ -28,6 +28,19 @@ int rustsecp256k1zkp_v0_8_0_musig_nonce_parity(const rustsecp256k1zkp_v0_8_0_con
     return 1;
 }
 
+static inline void* my_memmove(void* dest, const void* src, size_t n) {
+    unsigned char* d = (unsigned char*)dest;
+    const unsigned char* s = (const unsigned char*)src;
+    if (d < s) {
+        while (n--) *d++ = *s++;
+    } else {
+        d += n;
+        s += n;
+        while (n--) *--d = *--s;
+    }
+    return dest;
+}
+
 int rustsecp256k1zkp_v0_8_0_musig_adapt(const rustsecp256k1zkp_v0_8_0_context* ctx, unsigned char *sig64, const unsigned char *pre_sig64, const unsigned char *sec_adaptor32, int nonce_parity) {
     rustsecp256k1zkp_v0_8_0_scalar s;
     rustsecp256k1zkp_v0_8_0_scalar t;
@@ -63,7 +76,7 @@ int rustsecp256k1zkp_v0_8_0_musig_adapt(const rustsecp256k1zkp_v0_8_0_context* c
 
     rustsecp256k1zkp_v0_8_0_scalar_add(&s, &s, &t);
     rustsecp256k1zkp_v0_8_0_scalar_get_b32(&sig64[32], &s);
-    memmove(sig64, pre_sig64, 32);
+    my_memmove(sig64, pre_sig64, 32);
     rustsecp256k1zkp_v0_8_0_scalar_clear(&t);
     return ret;
 }
