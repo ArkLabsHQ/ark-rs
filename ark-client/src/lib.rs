@@ -127,7 +127,6 @@ pub use error::Error;
 /// #         &self,
 /// #         server_pk: XOnlyPublicKey,
 /// #         exit_delay: bitcoin::Sequence,
-/// #         descriptor_template: &str,
 /// #         network: Network,
 /// #     ) -> Result<BoardingOutput, Error> {
 /// #         unimplemented!()

@@ -55,7 +55,15 @@ pub async fn e2e() {
     assert_eq!(alice_offchain_balance.total(), Amount::ZERO);
     assert_eq!(bob_offchain_balance.total(), Amount::ZERO);
 
-    alice.board(&mut rng).await.unwrap();
+    {
+        let (boarding_inputs, amount) = alice.fetch_boarding_inputs().await.unwrap();
+        tracing::debug!(?boarding_inputs, ?amount, "Settling boarding inputs");
+        alice
+            .settle(&mut rng, boarding_inputs, vec![], amount)
+            .await
+            .unwrap();
+    }
+
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
     let alice_offchain_balance = alice.offchain_balance().await.unwrap();
@@ -107,7 +115,14 @@ pub async fn e2e() {
     assert_eq!(bob_offchain_balance.confirmed(), Amount::ZERO);
     assert_eq!(bob_offchain_balance.pending(), send_to_bob_vtxo_amount);
 
-    bob.board(&mut rng).await.unwrap();
+    {
+        let (pending_vtxos, amount) = bob.fetch_pending_vtxos().await.unwrap();
+        tracing::debug!(?pending_vtxos, ?amount, "Settling bob's vtxo");
+        bob.settle(&mut rng, vec![], pending_vtxos, amount)
+            .await
+            .unwrap();
+    }
+
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
     let alice_offchain_balance = alice.offchain_balance().await.unwrap();
@@ -127,7 +142,7 @@ pub async fn e2e() {
     assert_eq!(bob_offchain_balance.confirmed(), send_to_bob_vtxo_amount);
     assert_eq!(bob_offchain_balance.pending(), Amount::ZERO);
 
-    alice.board(&mut rng).await.unwrap();
+    alice.settle_all(&mut rng).await.unwrap();
     tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
     let alice_offchain_balance = alice.offchain_balance().await.unwrap();

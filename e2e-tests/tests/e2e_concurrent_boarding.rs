@@ -62,20 +62,20 @@ pub async fn concurrent_boarding() {
     let alice_task = tokio::spawn({
         async move {
             let mut rng = StdRng::from_entropy();
-            alice.board(&mut rng).await.unwrap();
+            alice.settle_all(&mut rng).await.unwrap();
             alice
         }
     });
 
     let bob_task = tokio::spawn(async move {
         let mut rng = StdRng::from_entropy();
-        bob.board(&mut rng).await.unwrap();
+        bob.settle_all(&mut rng).await.unwrap();
         bob
     });
 
     let claire_task = tokio::spawn(async move {
         let mut rng = StdRng::from_entropy();
-        claire.board(&mut rng).await.unwrap();
+        claire.settle_all(&mut rng).await.unwrap();
         claire
     });
 
@@ -144,20 +144,20 @@ pub async fn concurrent_boarding() {
     let alice_task = tokio::spawn({
         async move {
             let mut rng = StdRng::from_entropy();
-            alice.board(&mut rng).await.unwrap();
+            alice.settle_all(&mut rng).await.unwrap();
             alice
         }
     });
 
     let bob_task = tokio::spawn(async move {
         let mut rng = StdRng::from_entropy();
-        bob.board(&mut rng).await.unwrap();
+        bob.settle_all(&mut rng).await.unwrap();
         bob
     });
 
     let claire_task = tokio::spawn(async move {
         let mut rng = StdRng::from_entropy();
-        claire.board(&mut rng).await.unwrap();
+        claire.settle_all(&mut rng).await.unwrap();
         claire
     });
 

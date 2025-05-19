@@ -43,15 +43,33 @@ where
 {
     /// Lift all pending VTXOs and boarding outputs into the Ark, converting them into new,
     /// confirmed VTXOs. We do this by "joining the next round".
-    pub async fn board<R>(&self, rng: &mut R) -> Result<(), Error>
+    pub async fn settle_all<R>(&self, rng: &mut R) -> Result<(), Error>
+    where
+        R: Rng + CryptoRng + Clone,
+    {
+        let (boarding_inputs, vtxo_inputs, total_amount) =
+            self.fetch_round_transaction_inputs().await?;
+
+        self.settle(rng, boarding_inputs, vtxo_inputs, total_amount)
+            .await?;
+
+        Ok(())
+    }
+
+    /// Lift all pending VTXOs and boarding outputs into the Ark, converting them into new,
+    /// confirmed VTXOs. We do this by "joining the next round".
+    pub async fn settle<R>(
+        &self,
+        rng: &mut R,
+        boarding_inputs: Vec<round::OnChainInput>,
+        vtxo_inputs: Vec<round::VtxoInput>,
+        total_amount: Amount,
+    ) -> Result<(), Error>
     where
         R: Rng + CryptoRng + Clone,
     {
         // Get off-chain address and send all funds to this address, no change output 🦄
         let (to_address, _) = self.get_offchain_address()?;
-
-        let (boarding_inputs, vtxo_inputs, total_amount) =
-            self.fetch_round_transaction_inputs().await?;
 
         tracing::debug!(
             offchain_adress = %to_address.encode(),
@@ -153,11 +171,8 @@ where
         Ok(txid)
     }
 
-    /// Get all the [`round::OnChainInput`]s and [`round::VtxoInput`]s that can be used to join an
-    /// upcoming round.
-    async fn fetch_round_transaction_inputs(
-        &self,
-    ) -> Result<(Vec<round::OnChainInput>, Vec<round::VtxoInput>, Amount), Error> {
+    /// Get all the [`round::OnChainInput`]s that can be used to join an upcoming round.
+    pub async fn fetch_boarding_inputs(&self) -> Result<(Vec<round::OnChainInput>, Amount), Error> {
         // Get all known boarding outputs.
         let boarding_outputs = self.inner.wallet.get_boarding_outputs()?;
 
@@ -194,6 +209,13 @@ where
             }
         }
 
+        Ok((boarding_inputs, total_amount))
+    }
+
+    /// Get all [`round::VtxoInput`]s that can be used to join an upcoming round.
+    pub async fn fetch_pending_vtxos(&self) -> Result<(Vec<round::VtxoInput>, Amount), Error> {
+        let mut total_amount = Amount::ZERO;
+
         let spendable_vtxos = self.spendable_vtxos().await?;
 
         for (vtxo_outpoints, _) in spendable_vtxos.iter() {
@@ -218,7 +240,22 @@ where
             })
             .collect::<Vec<_>>();
 
-        Ok((boarding_inputs, vtxo_inputs, total_amount))
+        Ok((vtxo_inputs, total_amount))
+    }
+
+    /// Get all the [`round::OnChainInput`]s and [`round::VtxoInput`]s that can be used to join an
+    /// upcoming round.
+    async fn fetch_round_transaction_inputs(
+        &self,
+    ) -> Result<(Vec<round::OnChainInput>, Vec<round::VtxoInput>, Amount), Error> {
+        let (boarding_inputs, boarding_input_amount) = self.fetch_boarding_inputs().await?;
+        let (vtxo_inputs, vtxo_input_amount) = self.fetch_pending_vtxos().await?;
+
+        Ok((
+            boarding_inputs,
+            vtxo_inputs,
+            boarding_input_amount + vtxo_input_amount,
+        ))
     }
 
     async fn join_next_ark_round<R>(
