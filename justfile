@@ -158,7 +158,7 @@ arkd-wallet-run:
 
     set -euxo pipefail
 
-    make run-bitcoind -C $ARKD_WALLET_DIR run &> {{ arkd_wallet_logs }} &
+    make run-wallet-bitcoind -C $ARKD_WALLET_DIR run &> {{ arkd_wallet_logs }} &
 
     just _create-arkd-wallet
 
